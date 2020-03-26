@@ -67,11 +67,10 @@ RUN groupadd -r devops && useradd -g devops -G adm,sudo devops -m  -s /bin/bash 
 
 
 COPY ./docker_files/config/ansible.cfg /etc/ansible/ansible.cfg
-
+RUN chmod 644  /etc/ansible/ansible.cfg && chown -R  /etc/ansible/ansible.cfg
 
 RUN mkdir -p /usr/share/ansible_library/roles  /usr/share/ansible_library/my_modules/ /usr/share/ansible_library/my_module_utils
-RUN chown -R  devops /usr/share/ansible_library/
-RUN chmod  -R  775 /usr/share/ansible_library/
+RUN chown -R  devops /usr/share/ansible_library/ && chmod  -R  775 /usr/share/ansible_library/
 #RUN su - devops -c  "ansible-galaxy install --ignore-errors   -r /home/devops/default_requirements.yml" 
 RUN chown -R  devops:devops /home/devops/
 
