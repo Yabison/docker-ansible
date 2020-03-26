@@ -51,8 +51,6 @@ RUN python3 -m pip  install --upgrade pip && pip3 --no-cache-dir  install \
 COPY ./docker_files/bin/govmomi/govc_linux_amd64 /usr/local/bin/govc
 RUN chmod 755 /usr/local/bin/govc
 COPY ./docker_files/bin/govmomi/govc_bash_completion /usr/share/bash-completion/completions/govc_bash_completion
-COPY ./docker_files/bin/govmomi/govc_env.bash  /home/devops/.govc_env.bash
-RUN chmod 755  /home/devops/.govc_env.bash
 COPY ./docker_files/bin/sshto /usr/local/bin/sshto
 RUN chmod 755 /usr/local/bin/sshto
 
@@ -62,16 +60,22 @@ RUN printf '[local]\nlocalhost\n' > /etc/ansible/host
 EXPOSE 22
 
 # Define working directory.ans  
-RUN groupadd -r devops && useradd -g devops -G adm,sudo devops -m  -s /bin/bash && \
+RUN groupadd -r devops && useradd -g devops -G adm,sudo devops -m -p phyto -s /bin/bash -d /home/devops && \
   echo "devops ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/99-nopasswd && chmod 640 /etc/sudoers.d/99-nopasswd
 
+COPY ./docker_files/bin/govmomi/govc_env.bash  /home/devops/.govc_env.bash
+RUN chmod 755  /home/devops/.govc_env.bash
 
 COPY ./docker_files/config/ansible.cfg /etc/ansible/ansible.cfg
-RUN chmod 644  /etc/ansible/ansible.cfg && chown -R  /etc/ansible/ansible.cfg
+RUN chmod 644  /etc/ansible/ansible.cfg && chown  devops /etc/ansible/ansible.cfg
 
 RUN mkdir -p /usr/share/ansible_library/roles  /usr/share/ansible_library/my_modules/ /usr/share/ansible_library/my_module_utils
 RUN chown -R  devops /usr/share/ansible_library/ && chmod  -R  775 /usr/share/ansible_library/
 #RUN su - devops -c  "ansible-galaxy install --ignore-errors   -r /home/devops/default_requirements.yml" 
+COPY ansible /home/devops/ansible
+RUN chown -R  devops:devops /home/devops/
+
+
 RUN chown -R  devops:devops /home/devops/
 
 USER devops
