@@ -18,8 +18,15 @@ RUN mkdir /etc/ansible/
 RUN apt-get update \
   && apt-get install --no-install-recommends -y software-properties-common \
   && apt-add-repository ppa:ansible/ansible \
+  && apt-add-repository ppa:greymd/tmux-xpanes \
   && apt-get update \
-  && apt-get install --no-install-recommends -y openssh-client inetutils-ping vim less curl dos2unix wget unzip graphviz git jq sshpass bash bash-completion  sudo dialog locate rsync  docker  wmdocker   python3-netaddr python3 python3-pip python3-pyfg python3-pyvmomi  \
+  && apt-get install --no-install-recommends -y \
+  openssh-client sshpass rsync tmux tmux-xpanes  \
+  bash bash-completion sudo \
+  vim less dos2unix unzip locate \
+  inetutils-ping  curl  wget   git  dialog \   
+  docker  wmdocker graphviz jq \  
+  python3-netaddr python3 python3-pip python3-pyfg python3-pyvmomi \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -53,6 +60,8 @@ RUN chmod 755 /usr/local/bin/govc
 COPY ./docker_files/bin/govmomi/govc_bash_completion /usr/share/bash-completion/completions/govc_bash_completion
 COPY ./docker_files/bin/sshto /usr/local/bin/sshto
 RUN chmod 755 /usr/local/bin/sshto
+COPY ./docker_files/bin/xssh /usr/local/bin/xssh
+RUN chmod 755 /usr/local/bin/xssh
 
 RUN printf '[local]\nlocalhost\n' > /etc/ansible/host
 
