@@ -26,7 +26,7 @@ RUN apt-get update \
   vim less dos2unix unzip locate \
   inetutils-ping  curl  wget   git  dialog \   
   docker  wmdocker graphviz jq \  
-  python3-netaddr python3 python3-pip python3-pyfg python3-pyvmomi \
+  python3-netaddr python3 python3-pip python3-pyfg python3-pyvmomi tree \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
