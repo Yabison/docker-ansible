@@ -1,15 +1,39 @@
-FROM ubuntu:19.04
+#TODO ADD github CI , tgenerate 
+FROM ubuntu:19.10
+
+ARG BUILD_DATE
+ARG NAME
+ARG VERSION
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VCS_URL
 
 ENV \
+  VERSION="$VERSION" \
   ANSIBLE_VERSION="2.9.5" \
   ANSIBLE_LINT_VERSION="4.2.0a1" \
   MOLECULE_VERSION="2.22" \
   YAMLLINT_VERSION="1.20.0" \
   GOSS_VERSION="0.3.9"
 
+LABEL summary=$NAME \
+  name=$NAME \
+  maintainer="herve tamet <h.tamet@yabison.com>" \
+  version=$VERSION \
+  org.label-schema.build-date=$BUILD_DATE \
+  org.label-schema.name=$NAME \
+  #org.label-schema.description=$NAME \
+  org.label-schema.url=="https://yabison.com" \
+  org.label-schema.vcs-ref=$VCS_REF \
+  org.label-schema.vcs-url=$VCS_URL \
+  org.label-schema.vendor="Yabison" \
+  org.label-schema.version=$VERSION \
+  org.label-schema.schema-version="1.0"
+
+
 LABEL summary="Ansible deployment tools" \
   name="yabison/docker-ansible" \
-  version="1.0.x" \
+  version="1.0.4" \
   maintainer="herve tamet <h.tamet@yabison.com>"
 
 RUN mkdir /etc/ansible/
