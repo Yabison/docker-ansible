@@ -1,5 +1,5 @@
 #TODO ADD github CI , tgenerate 
-FROM ubuntu:20.04
+FROM ubuntu:20.10
 
 ARG BUILD_DATE
 ARG NAME
@@ -39,21 +39,27 @@ LABEL summary="Ansible deployment tools" \
 
 RUN mkdir /etc/ansible/
 
+RUN apt-get update && apt-get install --no-install-recommends -y software-properties-common \
+  && apt-get update && apt-get install --no-install-recommends -y \
+  openssh-client sshpass rsync gpg gpg-agent\
+  bash bash-completion sudo \
+  vim less dos2unix unzip locate tree \
+  inetutils-ping  curl  wget   git  dialog \   
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
+  #&& apt-add-repository ppa:ansible/ansible \
 RUN apt-get update \
-  && apt-get install --no-install-recommends -y software-properties-common \
-  && apt-add-repository ppa:ansible/ansible \
   && apt-add-repository ppa:greymd/tmux-xpanes \
   && apt-get update \
   && apt-get install --no-install-recommends -y \
-  openssh-client sshpass rsync tmux tmux-xpanes  \
-  bash bash-completion sudo \
-  vim less dos2unix unzip locate \
-  inetutils-ping  curl  wget   git  dialog \   
+  tmux tmux-xpanes  \
   docker  wmdocker graphviz jq \  
-  python3-netaddr python3 python3-pip python3-pyfg python3-pyvmomi tree \
+  python3-netaddr python3 python3-pip python3-pyfg python3-pyvmomi  \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+
 
 # molecule==${MOLECULE_VERSION} \
 # yamllint==${YAMLLINT_VERSION} \
