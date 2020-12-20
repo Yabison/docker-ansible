@@ -1,6 +1,10 @@
 collections:
   # Install a collection from Ansible Galaxy.
-  - name: fortios
-    source: fortinet.fortios
-  - name: meraki
-    source: cisco.meraki
+  - name: community.docker
+    source: https://galaxy.ansible.com
+  # - name: community
+  #   source: community.general
+  - name: fortinet.fortios
+    source: https://galaxy.ansible.com
+  - name: cisco.meraki
+    source: https://galaxy.ansible.com
