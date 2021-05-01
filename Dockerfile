@@ -1,5 +1,5 @@
 #TODO ADD github CI , tgenerate 
-FROM ubuntu:20.10
+FROM ubuntu:20.04
 
 ARG BUILD_DATE
 ARG NAME
@@ -39,26 +39,26 @@ LABEL summary="Ansible deployment tools" \
 
 RUN mkdir /etc/ansible/
 
-RUN apt-get update && apt-get install --no-install-recommends -y software-properties-common \
-  && apt-get update && apt-get install --no-install-recommends -y \
+RUN apt-get update && \
+  apt-get upgrade && \
+  apt-get install --no-install-recommends -y software-properties-common && \
+  apt-get install --no-install-recommends -y \
   openssh-client sshpass rsync gpg gpg-agent\
   bash bash-completion sudo \
   vim less dos2unix unzip locate tree \
-  inetutils-ping  curl  wget   git  dialog \   
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+  inetutils-ping  curl  wget   git  dialog && \   
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
   #&& apt-add-repository ppa:ansible/ansible \
-RUN apt-get update \
-  && apt-add-repository ppa:greymd/tmux-xpanes \
-  && apt-get update \
-  && apt-get install --no-install-recommends -y \
+RUN apt-add-repository ppa:greymd/tmux-xpanes && \
+  apt-get update && \
+   apt-get install --no-install-recommends -y \
   tmux tmux-xpanes  \
   docker  wmdocker graphviz jq \  
-  python3-netaddr python3 python3-pip python3-pyfg python3-pyvmomi  \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
-
+  python3-netaddr python3 python3-pip python3-pyfg python3-pyvmomi  &&\
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
 
 # molecule==${MOLECULE_VERSION} \
@@ -143,12 +143,12 @@ RUN  set -ex && \
 COPY ./ansible /home/devops/ansible
 
 # Clean up
-RUN apt-get clean \
-    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin \
-    && rm -rf /tmp/* /var/tmp/* \
-    && rm /var/log/lastlog /var/log/faillog ;
+RUN apt-get clean && \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin && \
+    rm -rf /tmp/* /var/tmp/* && \
+    rm /var/log/lastlog /var/log/faillog ;
 
 USER devops
 
