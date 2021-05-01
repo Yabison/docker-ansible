@@ -5,7 +5,7 @@ services:
     container_name: ansible
     build:
       context: ./
-      dockerfile: ./docker/Dockerfile
+      dockerfile: ./Dockerfile
     #volumes:
       #- ${PROJECT_DIRECTORY}/ansible:/home/devops/ansible
       #- ${PROJECT_DIRECTORY}/../.vault_password.txt:/etc/ansible/.vault_password
