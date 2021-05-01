@@ -8,12 +8,15 @@ A Docker image for playing with Ansible with the following software installed:
 * **govmomi** : A Go library for interacting with VMware vSphere APIs (ESXi and/or vCenter).
 * **sshto** : Small bash script to manage your ssh connections
 * **xssh/xpanes** : xpanes/tmux  Ultimate terminal divider powered by tmux ; with Host selection via Ansible host pattern matching.
+* **fcct/ ignition** : Add ignition tools to generate and validate ignition files (Fedora CoresOS) .
+
 
 Ansible collections installed :
 
 * **fortinet.fortios** : A collection of Ansible Modules for FortiOS
 * **cisco.meraki** : An Ansible collection for managing the Cisco Meraki Dashboard
 * **cisco.aci** : An Ansible collection for managing Cisco ACI infrastructure
+* **stormshield.SNS** : An Ansible collection for managing Stormshield firewall
 
 
 ## Tools 

@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  ansible:
+    container_name: ansible
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile
+    #volumes:
+      #- ${PROJECT_DIRECTORY}/ansible:/home/devops/ansible
+      #- ${PROJECT_DIRECTORY}/../.vault_password.txt:/etc/ansible/.vault_password
+      #- ${PROJECT_DIRECTORY}/../requirements_ansible:/home/devops/requirements_ansible
+    command: sleep inf

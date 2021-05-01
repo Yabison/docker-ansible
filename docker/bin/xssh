@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+
+
+# debugging #
+# export DEBUG='true'
+# to enable debugging before running this.
+[ "$DEBUG" == 'true' ] && set -x
+
+
+# Set this to your default inventory
+default_inventory_ansible="/home/devops/ansible/inventories/production/hosts.yml"
+cmd_inventory_ansible=""
+inventory_ansible=${default_inventory_ansible}
+
+##############
+# help usage #
+##############
+usage() {
+    echo "Usage: $0 [options] <host pattern>" >&2
+    echo "" >&2
+    echo "Starts a xpanes session based on Ansible inventory." >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  -h                Show help" >&2
+    echo "  -i <inventory> ansible inventory file i.e hosts.yml" >&2
+    echo "  -l <limit> limit selected hosts to an additional pattern" >&2
+		echo "  -c <command> command to execute on all hosts" >&2
+		echo "" >&2
+    echo 'You can use the ENV variable $ANSIBLE_INVENTORY to precise the inventory file ' >&2
+		echo "" >&2
+    echo "default inventory: ${default_inventory_ansible}" >&2
+		echo "env inventory: ${ANSIBLE_INVENTORY}" >&2
+		echo "command line inventory: ${cmd_inventory_ansible}" >&2
+		echo "inventory selected : ${inventory_ansible}" >&2
+}
+
+while [ $# -ne 0 ]; do
+    case $1 in
+	-i)
+	    shift;
+	    if [ $# -eq 0 ]; then
+		usage
+		exit 2
+	    fi
+	    cmd_inventory_ansible="$1"; shift
+	    ;;
+	-c)
+	    shift;
+	    if [ $# -eq 0 ]; then
+		usage
+		exit 2
+	    fi
+	    command="$1"; shift
+	    ;;
+	-l)
+	    shift;
+	    if [ $# -eq 0 ]; then
+		limit=""; shift
+	    fi
+	    limit="$1"; shift
+	    ;;
+	-h)
+	    usage
+	    exit 0
+	    ;;
+	-*)
+	    usage
+	    exit 2
+	    ;;
+	*)
+	    gname=$1; shift
+	    ;;
+    esac
+done
+
+if [ ! -z "${cmd_inventory_ansible}" ]; then
+	inventory_ansible=${cmd_inventory_ansible}
+elif [ ! -z "${ANSIBLE_INVENTORY}" ]; then
+	inventory_ansible=${ANSIBLE_INVENTORY}
+fi
+
+if [ -z "${gname}" ]; then
+    usage
+    exit 2
+fi
+######################
+# requirements check #
+######################
+
+if ! type tmux > /dev/null 2>&1 ; then
+    echo "tmux not found. Is it installed?" >&2
+    exit 2
+fi
+
+if ! type xpanes > /dev/null 2>&1 ; then
+    echo "xpanes not found. Is it installed?" >&2
+    exit 2
+fi
+
+if ! type ansible > /dev/null 2>&1 ; then
+    echo "ansible not found. Is it installed?" >&2
+    exit 2
+fi
+
+
+if ! [ -f "${inventory_ansible}" ] ; then
+    echo "ansible inventory  '${inventory_ansible}' not found." >&2
+    echo "Set var 'inventory_ansible' to location of ansible inventory." >&2
+    exit 2
+fi
+
+
+
+_hosts=`ansible -i ${inventory_ansible} --list-hosts ${gname} -l "${limit}" | sed -e '1,1d'`
+# trim whitespace.
+hosts="$(echo ${_hosts}|xargs)"
+
+if [ -z "${hosts}" ]; then
+    exit 1
+fi
+
+if [ -z "${command}" ]; then
+	xpanes --ssh ${hosts} 
+else
+	xpanes -t -s -c "ssh -o StrictHostKeyChecking=no {} '${command}' "  ${hosts} 
+fi
