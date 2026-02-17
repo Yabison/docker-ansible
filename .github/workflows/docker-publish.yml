@@ -37,7 +37,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Scan vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.1
+        uses: aquasecurity/trivy-action@0.32.0
         if: always()
         env:
           TRIVY_NO_PROGRESS: true
