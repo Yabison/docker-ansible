@@ -19,11 +19,14 @@ jobs:
         with:
           username: ${{ vars.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
+          
       - name: Extract version from tag
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
+        run: |
+          FULL_TAG=${GITHUB_REF#refs/tags/}
+          VERSION=${FULL_TAG#v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "FULL_TAG=$FULL_TAG" >> $GITHUB_OUTPUT
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v6
