@@ -1,0 +1,39 @@
+---
+roles:
+  # Install a role from Ansible Galaxy.
+  - src: arillso.sshd
+
+collections:
+  # Install a collection from Ansible Galaxy.
+  #ansible
+  - name: ansible.posix
+    source: https://galaxy.ansible.com
+ #- name: ansible.windows
+ #   source: https://galaxy.ansible.com
+  #community
+  - name: community.docker
+    source: https://galaxy.ansible.com
+  - name: community.general
+    source: https://galaxy.ansible.com
+  - name: community.crypto
+    source: https://galaxy.ansible.com
+ # - name: community.aws
+ #   source: https://galaxy.ansible.com
+ # - name: community.zabbix
+ #   source: https://galaxy.ansible.com
+  - name: community.grafana
+    source: https://galaxy.ansible.com
+  - name: community.mysql
+    source: https://galaxy.ansible.com
+  - name: devsec.hardening
+    source: https://galaxy.ansible.com
+  - name: community.proxmox
+    source: https://galaxy.ansible.com
+ # - name: community.proxysql
+ #   source: https://galaxy.ansible.com
+  # - name: anatomicjc.passbolt
+  #   source: https://galaxy.ansible.com
+  # - name: passbolt_lookup
+  #   source: git+https://github.com/passbolt/passbolt-ansible-lookup-plugin.git@main
+  #   type: git
+  #   path: passbolt-lookup  # Dossier cible

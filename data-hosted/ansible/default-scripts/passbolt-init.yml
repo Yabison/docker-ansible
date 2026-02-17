@@ -1,0 +1,98 @@
+---
+- name: Initialisation Passbolt depuis Vault
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    SECRETS_DIR: "{{ secrets_dir | default('/run/secrets') }}"
+    VAULT_FILE: "{{ vault_file | default('/ansible/vaults/passbolt.vault.yml') }}"
+    # passbolt.url: "${passbolt_url}"
+    # passbolt.private_key: "${passbolt_private_key}"
+    # passbolt.passphrase: "${passbolt_password}"
+
+  vars_files:
+    - "{{ VAULT_FILE }}"
+
+  tasks:
+    # ===================================================================
+    # CAS DE SORTIE 1: Prérequis
+    # ===================================================================
+    - name: Vérifier vault file
+      ansible.builtin.stat:
+        path: "{{ VAULT_FILE }}"
+      register: vault_stat
+      failed_when: not vault_stat.stat.exists
+
+    - name: Vérifier passbolt-cli
+      ansible.builtin.command: which passbolt
+      register: passbolt_check
+      changed_when: false
+      failed_when: passbolt_check.rc != 0
+
+    # ===================================================================
+    # EXTRACTION VARIABLES (automatique !)
+    # ===================================================================
+    - name: Debug variables extraites
+      ansible.builtin.debug:
+        msg: |
+          ✅ PASSBOLT_SERVER_URL: {{ passbolt_url | default('❌ vide') }}
+          ✅ PASSBOLT_GPG_KEY_PASSPHRASE: {{ passbolt_password[:5] | default('❌ vide') }}...
+          ✅ PASSBOLT_GPG_KEY: {{ passbolt_private_key[:50] | default('❌ vide') }}...
+
+    - name: Vérifier variables critiques
+      ansible.builtin.assert:
+        that:
+          - passbolt_url is defined
+          - passbolt_url | length > 0
+          - passbolt_private_key is defined
+        fail_msg: "Variables Passbolt manquantes !"
+      when: passbolt_url is not defined or passbolt_private_key is not defined
+
+    - name: GPG import 
+      ansible.builtin.shell: |
+        set -o pipefail && echo "{{ passbolt_private_key }}" | gpg --batch --import
+      args:
+        executable: /bin/bash
+      register: gpg_import
+      changed_when: "'imported' in gpg_import.stderr"
+      failed_when: false
+
+    - name: GPG trust
+      ansible.builtin.shell: |
+        set -o pipefail && 
+        GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | grep sec | head -1 | awk '{print $2}' | cut -d'/' -f2) &&
+        [ -n "$GPG_KEY_ID" ] && echo -e "5\ny\n" | gpg --command-fd 0 --edit-key "$GPG_KEY_ID" trust quit
+      args:
+        executable: /bin/bash
+      register: gpg_trust
+      changed_when: "'Your decision' in gpg_trust.stdout"  # Détecte changement réel
+      failed_when: false
+
+
+    # ===================================================================
+    # CONFIG PASSBOLT (1 ligne !)
+    # ===================================================================
+    - name: Configurer passbolt-cli
+      ansible.builtin.command: |
+        passbolt configure \
+          --serverAddress "{{ passbolt_url }}" \
+          --userPassword "{{ passbolt_password }}" \
+          --userPrivateKey "{{ passbolt_private_key }}"
+      register: passbolt_config
+      changed_when: passbolt_config.rc == 0
+      failed_when: false
+
+    # ===================================================================
+    # TEST CONNEXION
+    # ===================================================================
+    - name: Tester connexion Passbolt
+      ansible.builtin.command: passbolt list folders
+      register: passbolt_test
+      changed_when: false
+
+    - name: Afficher stats
+      ansible.builtin.debug:
+        msg: |
+          ✅ Connexion OK !
+          📁 Dossiers: {{ passbolt_test.stdout_lines | length }}

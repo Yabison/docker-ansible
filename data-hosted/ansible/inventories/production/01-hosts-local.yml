@@ -1,0 +1,10 @@
+all:
+  children:
+    hosts_local:
+      hosts:
+        localhost:
+          ansible_host: 127.0.0.1
+          company: yabison
+          skipConfigSsh: true 
+          ansible_connection: local
+        

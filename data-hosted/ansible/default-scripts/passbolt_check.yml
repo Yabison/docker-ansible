@@ -1,0 +1,24 @@
+- hosts: localhost
+  gather_facts: false
+  vars_files:
+    - "/ansible/vaults/passbol.vault.yml"
+  vars:
+    passbolt: 'anatomicjc.passbolt.passbolt'
+
+  tasks:
+    - name: Récupérer credentials TEST
+      ansible.builtin.include_role:
+        name: passbolt_get
+      vars:
+        passbolt_get_resource_name: "TEST"
+        passbolt_get_resource_folder: ""   # optionnel
+        passbolt_get_result_var: "test_secret"
+
+    # Utilisation des secrets récupérés
+    - name: Login Test
+      ansible.builtin.debug:
+        msg: "Login TEST: {{ test_secret.username }}"
+
+    - name: Utiliser le mot de passe TEST
+      ansible.builtin.debug:
+        msg: "Password TEST: {{ test_secret.password }}"

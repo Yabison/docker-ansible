@@ -1,0 +1,25 @@
+- name: "Passbolt | Vérifier que le nom de ressource est défini"
+  ansible.builtin.fail:
+    msg: "passbolt_get_resource_name est obligatoire"
+  when: passbolt_get_resource_name == ""
+
+- name: "Passbolt | Récupérer le secret '{{ passbolt_get_resource_name }}'"
+  ansible.builtin.shell: |
+    set -o pipefail
+    passbolt list resources -j \
+      | jq -r \
+          --arg name "{{ passbolt_get_resource_name }}" \
+          --arg folder "{{ passbolt_get_resource_folder }}" \
+          '.[] | select(.name == $name and ($folder == "" or .folder_parent_path == $folder)) | .id' \
+      | head -1 \
+      | xargs -I{} passbolt get resource --id {} -j
+  args:
+    executable: /bin/bash
+  register: _passbolt_get_raw
+  no_log: true
+  changed_when: false
+
+- name: "Passbolt | Parser le résultat"
+  ansible.builtin.set_fact:
+    "{{ passbolt_get_result_var }}": "{{ _passbolt_get_raw.stdout | from_json }}"
+  no_log: true

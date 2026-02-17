@@ -1,0 +1,1 @@
+echo "Daily cron, do nothing just an example"
