@@ -1,0 +1,5 @@
+galaxy_info:
+  role_name: passbolt_get
+  author: local
+  description: Récupère un secret Passbolt par nom et folder optionnel
+dependencies: []

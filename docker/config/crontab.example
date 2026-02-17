@@ -1,0 +1,8 @@
+# Exécuter tous les jours à 3h du matin
+0 3 * * * /home/devops/ansible/run-daily.sh >>/proc/1/fd/1 2>>/proc/1/fd/2
+
+# Ou toutes les 30 minutes (pour tests)
+#*/30 * * * * /home/devops/ansible/run-30min-checks.sh >>>/proc/1/fd/1 2>>/proc/1/fd/2
+
+# Exemple : mise à jour ansible-galaxy toutes les semaines
+#0 4 * * 0 ansible-galaxy install -r /home/devops/ansible/ansible_requirements.yml --upgrade >> /home/devops/galaxy-update.log>>/proc/1/fd/1 2>>/proc/1/fd/2

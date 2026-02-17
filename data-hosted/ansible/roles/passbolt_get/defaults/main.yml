@@ -1,0 +1,3 @@
+passbolt_get_resource_name: ""
+passbolt_get_resource_folder: ""
+passbolt_get_result_var: "passbolt_secret"

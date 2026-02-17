@@ -1,0 +1,23 @@
+.DS_Store
+.vscode
+# Fichier de mot de passe - NE JAMAIS COMMITER !
+.password-vault-ansible
+passbolt_private.txt
+passbolt_private.asc
+
+# Secrets et données sensibles
+*.vault
+*.vault.yml
+*.key
+*.pem
+
+# Fichiers Docker
+.env
+docker-compose.override.yml
+
+# Logs
+*.log
+
+# Backup
+*.bak
+*~

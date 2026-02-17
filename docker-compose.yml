@@ -1,13 +1,110 @@
-version: "3"
-
 services:
   ansible:
-    container_name: ansible
+    #command: ["sleep 30000"]
     build:
-      context: ./
-      dockerfile: ./Dockerfile
-    #volumes:
-      #- ${PROJECT_DIRECTORY}/ansible:/home/devops/ansible
-      #- ${PROJECT_DIRECTORY}/../.vault_password.txt:/etc/ansible/.vault_password
-      #- ${PROJECT_DIRECTORY}/../requirements_ansible:/home/devops/requirements_ansible
-    command: sleep inf
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        VERSION: "1.0.4"
+        BUILD_DATE: ${BUILD_DATE:-}
+        VCS_REF: ${VCS_REF:-}
+        VCS_URL: ${VCS_URL:-}
+        DEVOPS_USER: ${DEVOPS_USER:-devops}
+        DEVOPS_GROUP: ${DEVOPS_GROUP:-devops} 
+        DEVOPS_UID: ${DEVOPS_UID:-1000}
+        DEVOPS_GID: ${DEVOPS_GID:-1000}
+        PASSBOLT_CLI_VERSION: "0.4.1"
+        SUPERCRONIC_VERSION: "v0.2.29"
+    image: yabison/ansible:1.0.4
+    container_name: ansible-yabison
+    
+    # Sécurité: utilisateur non-root
+    #user: "1000:1000"
+    user: "${DEVOPS_UID:-1000}:${DEVOPS_GID:-1000}"
+    
+    # Sécurité: lecture seule du système de fichiers (sauf volumes)
+    read_only: false
+    
+    # Sécurité: désactivation des privilèges
+    security_opt:
+      - no-new-privileges:true
+    
+    # Sécurité: capabilities minimales
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    
+    # Limitations des ressources
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    
+    # Volumes pour persistance
+    volumes:
+      # Playbooks Ansible
+      - ./data-hosted/ansible:/home/devops/ansible
+      # Configuration Ansible (inventaires, group_vars, etc.)
+      - ./data-hosted/.ansible:/home/devops/.ansible
+      # Crontab (exemple)
+      - ./docker/config/crontab.example:/home/devops/crontab
+      # Secrets : vault password , passbolt , git. key
+      - ./data-hosted/.secrets/ansible-vaults:/ansible/vaults:ro \
+      # Volumes temporaires en écriture
+      - ansible_tmp:/tmp
+    # ===================================================================
+    # Tmpfs - Fix pour les permissions
+    # ===================================================================
+    # Tmpfs créé avec les bonnes permissions automatiquement
+    tmpfs:
+      # Alternative si vous voulez limiter la taille :
+      # - /home/devops/.ansible:uid=${DEVOPS_UID:-1000},gid=${DEVOPS_GID:-1000},mode=0755,size=100m
+      - /home/devops/.gnupg:uid=${DEVOPS_UID:-1000},gid=${DEVOPS_GID:-1000},mode=0700
+      - /home/devops/.config:uid=${DEVOPS_UID:-1000},gid=${DEVOPS_GID:-1000},mode=0755
+      - /secrets:uid=${DEVOPS_UID:-1000},gid=${DEVOPS_GID:-1000},mode=0700  # RAM uniquement (disque=NEVER)
+    secrets:
+      - ansible_vault_password
+    # Variables d'environnement 
+    environment:
+      - ANSIBLE_HOST_KEY_CHECKING=False
+      - ANSIBLE_FORCE_COLOR=true
+      - TZ=Europe/Paris
+      - DEVOPS_UID=${DEVOPS_UID:-1000}
+      - DEVOPS_GID=${DEVOPS_GID:-1000}
+    # Réseau personnalisé
+    networks:
+      - ansible_network
+    
+    # Redémarrage automatique
+    restart: unless-stopped
+    
+    # Logs limités
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  ansible_tmp:
+    driver: local
+
+
+networks:
+  ansible_network:
+    driver: bridge
+    # ipam:
+    #   config:
+    #     - subnet: 172.28.0.0/16
+
+secrets:
+  ansible_vault_password:
+    file: ./data-hosted/.secrets/docker-cleartext/ansible_vault_password
