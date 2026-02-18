@@ -141,7 +141,7 @@ jobs:
       # ─────────────────────────────────────────────
 
       - name: Upload SARIF → GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@dd746615b3b9d728a6a37ca2045b68ca76d4841a  # v3.28.0
+        uses: github/codeql-action/upload-sarif@9e907b5e64f6b83e7804b09294d44122997950d6  # v3.28.0
         if: always()
         with:
           sarif_file: trivy-results.sarif
