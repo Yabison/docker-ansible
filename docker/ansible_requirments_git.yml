@@ -1,4 +1,0 @@
-#roles:
-  # - src: "ssh://git@git.yabison.com:/exploit/ansible/yabison.aws-cli.git"
-  #   scm: "git"
-  #   version: "main"   

@@ -119,7 +119,7 @@ RUN set -ex && \
     passbolt --version
 
 # Installation des dépendances Python
-COPY docker/python_requirements.txt /tmp/requirements.txt
+COPY docker/config/python_requirements.txt /tmp/requirements.txt
 
 RUN pip install --break-system-packages --no-cache-dir -r /tmp/requirements.txt && \
     PY_VER=$(python3 -c "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')") && \
@@ -213,7 +213,7 @@ RUN mkdir -p /etc/ansible \
     chmod -R 755 "/home/${DEVOPS_USER}/.ansible"
 
 COPY --chown=${DEVOPS_UID}:${DEVOPS_GID} docker/config/ansible.cfg /etc/ansible/ansible.cfg
-COPY --chown=${DEVOPS_UID}:${DEVOPS_GID} docker/ansible_requirements.yml "/home/${DEVOPS_USER}/requirements.yml"
+COPY --chown=${DEVOPS_UID}:${DEVOPS_GID} docker/config/ansible_requirements.yml "/home/${DEVOPS_USER}/requirements.yml"
 
 RUN echo "[local]" > /etc/ansible/hosts && \
     echo "localhost ansible_connection=local" >> /etc/ansible/hosts && \
