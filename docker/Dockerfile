@@ -150,7 +150,7 @@ LABEL org.opencontainers.image.title="Ansible + Supercronic (Alpine Hardened)" \
       security.tini="true" \
       security.multi-stage="true" \
       slsa.ver="1.0.0" \
-      slsa.github.com/workflow/ref="refs/heads/main"
+      slsa.workflow.ref="refs/heads/main"
 
 SHELL ["/bin/ash", "-euxo", "pipefail", "-c"]
 # Installation des packages runtime UNIQUEMENT
@@ -262,9 +262,13 @@ ENV DEVOPS_USER="${DEVOPS_USER}" \
 # Installation des collections et rôles Ansible (décommenté et corrigé)
 USER root
 COPY docker/ansible_requirements.yml /tmp/ansible_requirements.yml
-RUN su-exec "${DEVOPS_USER}" ansible-galaxy install -r /tmp/ansible_requirements.yml && \
-    rm /tmp/ansible_requirements.yml && \
-    find "/home/${DEVOPS_USER}/.ansible" -type f -name "*.pyc" -delete 2>/dev/null || true
+
+RUN set -eux && \
+    su-exec "${DEVOPS_USER}" ansible-galaxy install -r /tmp/ansible_requirements.yml && \
+    rm -f /tmp/ansible_requirements.yml && \
+    find "/home/${DEVOPS_USER}/.ansible" -type f -name "*.pyc" -delete 2>/dev/null || : && \
+    # Optionnel : supprime aussi les dossiers __pycache__ (très fréquent avec ansible)
+    find "/home/${DEVOPS_USER}/.ansible" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || :
 USER "${DEVOPS_UID}:${DEVOPS_GID}"
 
 WORKDIR "/home/${DEVOPS_USER}"
