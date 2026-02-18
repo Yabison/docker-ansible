@@ -15,7 +15,7 @@ services:
         DEVOPS_GID: ${DEVOPS_GID:-1000}
         PASSBOLT_CLI_VERSION: "0.4.1"
         SUPERCRONIC_VERSION: "v0.2.29"
-    image: yabison/ansible:1.0.4
+    image: ${IMAGE_NAME:-yabison/docker-ansible}:${VERSION:-dev}
     container_name: ansible-yabison
     
     # Sécurité: utilisateur non-root
