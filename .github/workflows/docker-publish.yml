@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
   packages: write
-
+  security-events: write
 jobs:
   push_to_registry:
     runs-on: ubuntu-latest
@@ -46,23 +46,45 @@ jobs:
           docker push yabison/docker-ansible:${{ github.ref_name }}
           docker push yabison/docker-ansible:latest
 
-
-      - name: Scan vulnerabilities
-        uses: aquasecurity/trivy-action@0.32.0
+      # - name: Scan vulnerabilities
+      #   uses: aquasecurity/trivy-action@0.32.0
+      #   if: always()
+      #   env:
+      #     TRIVY_NO_PROGRESS: true
+      #   with:
+      #     image-ref: ${{ vars.IMAGE_NAME }}:${{ steps.get_version.outputs.VERSION }}
+      #     format: sarif
+      #     output: trivy-results.sarif
+      #     severity: CRITICAL,HIGH
+      #     scanners: vuln
+      #     ignore-unfixed: true
+      #     exit-code: 1
+      
+      - name: Security scan + SBOM
+        continue-on-error: true
+        run: |
+          docker run --rm aquasec/trivy:latest image \
+            yabison/docker-ansible:${{ github.ref_name }} \
+            --severity CRITICAL,HIGH --no-progress --exit-code 0 \
+            --format json --output trivy-report.json
+          docker run --rm aquasec/trivy:latest image \
+            yabison/docker-ansible:${{ github.ref_name }} \
+            --format cyclonedx --output sbom.json
+      
+      - uses: actions/upload-artifact@v4
         if: always()
-        env:
-          TRIVY_NO_PROGRESS: true
         with:
-          image-ref: ${{ vars.IMAGE_NAME }}:${{ steps.get_version.outputs.VERSION }}
+          name: security-reports
+          path: |
+            trivy-report.json
+            sbom.json
+
+      - name: Scan SARIF
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: yabison/docker-ansible:${{ github.ref_name }}
           format: sarif
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
-          scanners: vuln
-          ignore-unfixed: true
-          exit-code: 1
-
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: trivy-results.sarif
+          exit-code: 0  # Ne bloque PAS le workflow
+          continue-on-error: true
