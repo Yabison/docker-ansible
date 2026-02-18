@@ -19,14 +19,18 @@ jobs:
         with:
           username: ${{ vars.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          
-      - name: Extract version from tag
+
+      - name: Extract version from tag (DEBUG)
         id: get_version
         run: |
-          FULL_TAG=${GITHUB_REF#refs/tags/}
-          VERSION=${FULL_TAG#v}
+          echo "GITHUB_REF='${GITHUB_REF}'"
+          echo "FULL_TAG=${GITHUB_REF#refs/tags/}"
+          echo "VERSION1=${GITHUB_REF#refs/tags/v}"
+          VERSION=$(echo $GITHUB_REF | sed 's|refs/tags/||' | sed 's/^v//')
+          echo "VERSION=$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "FULL_TAG=$FULL_TAG" >> $GITHUB_OUTPUT
+        shell: bash
+        
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v6
