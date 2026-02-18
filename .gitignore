@@ -12,7 +12,6 @@ passbolt_private.asc
 *.pem
 
 # Fichiers Docker
-.env
 docker-compose.override.yml
 
 # Logs
