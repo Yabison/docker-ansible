@@ -92,7 +92,7 @@ jobs:
 
       # ✅ Build amd64 uniquement avec load:true → Trivy peut scanner l'image locale
       - name: Build image (amd64 — pour scan Trivy)
-        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355  # v6.10.0
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8  # v6.19.2
         with:
           context: .
           file: ${{ env.DOCKERFILE }}
@@ -208,7 +208,7 @@ jobs:
       # Cache GHA chaud (layers amd64 déjà buildés par job scan)
       # → arm64 seul est compilé ici via QEMU
       - name: Build multi-arch + Push
-        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355  # v6.10.0
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8  # v6.19.2
         id: push
         with:
           context: .
