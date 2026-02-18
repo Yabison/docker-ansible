@@ -8,10 +8,6 @@ BUILD_DATE      := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 VCS_REF         := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 VCS_URL         := $(shell git config --get remote.origin.url 2>/dev/null || echo "unknown")
 
-# UID/GID de l'utilisateur courant (pour volumes bindés)
-DEVOPS_UID      := 1000 #$(shell id -u)
-DEVOPS_GID      := 1000 #$(shell id -g)
-
 # Chemins des répertoires
 DATA_HOSTED         := ./data-hosted
 SECRETS_DIR         := $(DATA_HOSTED)/.secrets
@@ -185,7 +181,44 @@ build-nocache: ## Construire l'image principale no cache
 	@echo "$(GREEN)Build $(IMAGE_NAME):$(VERSION)  [UID=$(DEVOPS_UID) GID=$(DEVOPS_GID)]$(NC)"
 	DEVOPS_UID=$(DEVOPS_UID) DEVOPS_GID=$(DEVOPS_GID) \
 	docker compose -f $(COMPOSE_FILE) build --no-cache
+# ────────────────────────────────────────────────
+# Build — CI (docker buildx, SLSA, SBOM, cache GHA)
+# Variables lues depuis .env via -include + export
+# Identique aux build-args du CI GitHub Actions
+# ────────────────────────────────────────────────
 
+# Tous les build-args partagés entre build-ci et build-ci-nocache
+# Lus depuis .env (déjà chargé via -include .env + export)
+_BUILDX_ARGS := \
+		--file $(DOCKERFILE) \
+		--tag $(IMAGE_NAME):$(VERSION) \
+		--tag $(IMAGE_NAME):latest \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg VCS_REF=$(VCS_REF) \
+		--build-arg VCS_URL=$(VCS_URL) \
+		--build-arg ALPINE_VERSION=$(ALPINE_VERSION) \
+		--build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
+		--build-arg PASSBOLT_CLI_VERSION=$(PASSBOLT_CLI_VERSION) \
+		--build-arg SUPERCRONIC_VERSION=$(SUPERCRONIC_VERSION) \
+		--build-arg DEVOPS_USER=$(DEVOPS_USER) \
+		--build-arg DEVOPS_GROUP=$(DEVOPS_GROUP) \
+		--build-arg DEVOPS_UID=$(DEVOPS_UID) \
+		--build-arg DEVOPS_GID=$(DEVOPS_GID) \
+		--provenance=true \
+		--sbom=true \
+		--load
+
+build-ci: ## [CI] Build buildx + SLSA + SBOM — simule le CI GitHub en local
+	@echo "$(GREEN)Build CI $(IMAGE_NAME):$(VERSION)$(NC)"
+	@echo "  ALPINE=$(ALPINE_VERSION)  PYTHON=$(PYTHON_VERSION)  SUPERCRONIC=$(SUPERCRONIC_VERSION)"
+	docker buildx build $(_BUILDX_ARGS) .
+
+build-ci-nocache: ## [CI] Build buildx sans cache
+	@echo "$(GREEN)Build CI no-cache $(IMAGE_NAME):$(VERSION)$(NC)"
+	@echo "  ALPINE=$(ALPINE_VERSION)  PYTHON=$(PYTHON_VERSION)  SUPERCRONIC=$(SUPERCRONIC_VERSION)"
+	docker buildx build $(_BUILDX_ARGS) --no-cache .
+	
 # ────────────────────────────────────────────────
 # Lancement
 # ────────────────────────────────────────────────
