@@ -21,7 +21,9 @@ PASSBOLT_VAULT_FILENAME := passbolt.vault.yml
 PASSBOLT_VAULT_FILE := $(VAULTS_DIR)/$(PASSBOLT_VAULT_FILENAME)
 COMPOSE_FILE        ?= docker-compose.yml
 PASSWORD_FILE       ?= $(CLEAR_PASS_DIR)/ansible_vault_password
-
+DOCKERFILE      ?= docker/Dockerfile
+#ALPINE_VERSION  ?= $(shell grep -m1 'ARG ALPINE_VERSION=' $(DOCKERFILE) | cut -d= -f2)
+PIN_SCRIPT      ?= docker/scripts/pin-apk-versions.py
 # Service docker-compose principal
 SERVICE        ?= ansible
 
@@ -33,12 +35,18 @@ YELLOW := \033[1;33m
 CYAN   := \033[0;36m
 NC     := \033[0m
 
+# Capturé AVANT le -include .env, donc = "Makefile" uniquement
+MAKEFILE_SELF := $(lastword $(MAKEFILE_LIST))
 
-.PHONY: help build build-base up up-build rebuild down logs shell clean push scan test audit security-report get-password save-password remove-password init-dirs create-passbolt-vault
+# recupere les variables du .env
+-include .env
+export
+
+.PHONY: help build build-base up up-build rebuild down logs shell clean push scan test audit security-report get-password save-password remove-password init-dirs create-passbolt-vault pin-versions test-pin hadolint
 
 help: ## Afficher cette aide
 	@echo "$(CYAN)Commandes disponibles :$(NC)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-18s$(NC) %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_SELF) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-18s$(NC) %s\n", $$1, $$2}'
 
 # ────────────────────────────────────────────────
 # Initialisation des répertoires
@@ -264,6 +272,34 @@ security-report: ## Générer un petit rapport texte
 	@echo "\n=== whoami ===" >> security-report.txt
 	@docker run --rm $(IMAGE_NAME):$(VERSION) whoami >> security-report.txt
 	@echo "$(GREEN)Rapport créé : security-report.txt$(NC)"
+# ────────────────────────────────────────────────
+# APK Pinning (hadolint DL3018)
+# ────────────────────────────────────────────────
+pin-versions: ## Épingle les versions APK dans le Dockerfile (résolution live via pkgs.alpinelinux.org)
+	@echo "$(CYAN)📌 Détection Alpine version : $(ALPINE_VERSION)$(NC)"
+	@if [ ! -f "$(PIN_SCRIPT)" ]; then \
+		echo "$(RED)❌ Script introuvable : $(PIN_SCRIPT)$(NC)"; \
+		echo "   → Téléchargez-le depuis le projet ou lancez : make renovate-install"; \
+		exit 1; \
+	fi
+	@python3 $(PIN_SCRIPT) --alpine-version $(ALPINE_VERSION) $(DOCKERFILE)
+	@echo "$(GREEN)✅ Terminé. Lancez 'make hadolint' pour vérifier.$(NC)"
+
+pin-versions-update: ## [MAJ] Met à jour les versions APK déjà épinglées
+	@echo "$(CYAN)🔄 Mise à jour APK — Alpine $(ALPINE_VERSION)$(NC)"
+	@python3 $(PIN_SCRIPT) --alpine-version $(ALPINE_VERSION) --update $(DOCKERFILE)
+	@echo "$(GREEN)✅ Terminé. Lancez 'make hadolint' pour vérifier.$(NC)"
+
+pin-versions-dry: ## Simulation d'épinglage APK (sans modification)
+	@echo "$(CYAN)🔎 Dry-run PIN — aucun fichier modifié$(NC)"
+	@python3 $(PIN_SCRIPT) --alpine-version $(ALPINE_VERSION) --dry-run $(DOCKERFILE)
+
+pin-versions-update-dry: ## Simulation de mise à jour APK (sans modification)
+	@echo "$(CYAN)🔎 Dry-run UPDATE — aucun fichier modifié$(NC)"
+	@python3 $(PIN_SCRIPT) --alpine-version $(ALPINE_VERSION) --update --dry-run $(DOCKERFILE)
+
+hadolint: ## Lint du Dockerfile
+	docker run --rm -i hadolint/hadolint:latest-alpine < $(DOCKERFILE)
 
 # ────────────────────────────────────────────────
 # Nettoyage & Push

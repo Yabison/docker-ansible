@@ -13,8 +13,10 @@ services:
         DEVOPS_GROUP: ${DEVOPS_GROUP:-devops} 
         DEVOPS_UID: ${DEVOPS_UID:-1000}
         DEVOPS_GID: ${DEVOPS_GID:-1000}
-        PASSBOLT_CLI_VERSION: "0.4.1"
-        SUPERCRONIC_VERSION: "v0.2.29"
+        ALPINE_VERSION: ${ALPINE_VERSION}
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.12}
+        PASSBOLT_CLI_VERSION: ${PASSBOLT_CLI_VERSION:-0.4.1}
+        SUPERCRONIC_VERSION: ${SUPERCRONIC_VERSION:-v0.2.29}
     image: ${IMAGE_NAME:-yabison/docker-ansible}:${VERSION:-dev}
     container_name: ansible-yabison
     

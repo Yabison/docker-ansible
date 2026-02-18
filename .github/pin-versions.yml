@@ -1,0 +1,32 @@
+name: Pin APK Versions
+on:
+  schedule:
+    - cron: '0 2 1 * *'  # 1er du mois à 2h
+  workflow_dispatch:
+
+jobs:
+  pin-versions:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Pin APK versions
+      run: |
+        chmod +x pin-apk-versions.sh update-dockerfile.sh
+        ./pin-apk-versions.sh 3.22
+        ./update-dockerfile.sh
+        
+    - name: Test build
+      run: docker build -t test-pin .
+      
+    - name: Create PR
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore: pin APK versions (auto)"
+        title: "🔒 Pin Alpine package versions"
+        body: |
+          Versions APK mises à jour automatiquement.
+          
+          Changes: ${{ github.event.pull_request.changed_files }}
+        branch: chore/pin-apk-versions
