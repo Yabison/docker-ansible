@@ -168,7 +168,7 @@ RUN pip install --break-system-packages --no-cache-dir -r /tmp/requirements.txt 
 # ────────────────────────────────────────────────
 # ÉTAPE 2 : IMAGE FINALE (Runtime minimal)
 # ────────────────────────────────────────────────
-FROM alpine:3.19
+FROM alpine:${ALPINE_VERSION}
 
 ARG VERSION ALPINE_VERSION DEVOPS_UID DEVOPS_GID DEVOPS_GROUP DEVOPS_USER BUILD_DATE VCS_REF
 
