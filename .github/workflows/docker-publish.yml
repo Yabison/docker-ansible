@@ -89,7 +89,7 @@ jobs:
 
       # ✅ Scan de vulnérabilités — résultats en JSON pour artefact
       - name: Scan vulnérabilités (JSON)
-        uses: aquasecurity/trivy-action@18f2505d82aa84a60a98b5b4ce5e74af59eaec4a  # v0.29.0
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8  # v0.33.1
         with:
           image-ref: ${{ env.IMAGE_REF }}
           format: json
@@ -101,7 +101,7 @@ jobs:
 
       # ✅ Scan SARIF → envoyé à GitHub Security (Code Scanning)
       - name: Scan SARIF pour GitHub Security
-        uses: aquasecurity/trivy-action@18f2505d82aa84a60a98b5b4ce5e74af59eaec4a  # v0.29.0
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8  # v0.33.1
         with:
           image-ref: ${{ env.IMAGE_REF }}
           format: sarif
@@ -110,6 +110,7 @@ jobs:
           scanners: vuln,secret,misconfig
           ignore-unfixed: true
           exit-code: 0  # Changer à 1 pour bloquer le push si vuln détectée
+          skip-setup-trivy: true  # ✅ Trivy déjà installé par le step précédent
 
       # ✅ CE STEP ÉTAIT MANQUANT — alimente l'onglet Security → Code Scanning
       - name: Upload SARIF vers GitHub Code Scanning
@@ -120,12 +121,13 @@ jobs:
 
       # ✅ SBOM au format CycloneDX
       - name: Générer SBOM (CycloneDX)
-        uses: aquasecurity/trivy-action@18f2505d82aa84a60a98b5b4ce5e74af59eaec4a  # v0.29.0
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8  # v0.33.1
         with:
           image-ref: ${{ env.IMAGE_REF }}
           format: cyclonedx
           output: sbom.cyclonedx.json
           exit-code: 0
+          skip-setup-trivy: true  # ✅ Trivy déjà installé
 
       # ✅ Archivage de tous les rapports de sécurité
       - name: Upload artefacts sécurité
