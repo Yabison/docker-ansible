@@ -246,7 +246,7 @@ jobs:
           COSIGN_EXPERIMENTAL: "1"
 
       - name: Récupérer le SBOM depuis les artefacts du job scan
-        uses: actions/download-artifact@fa0a91b85d4f404e444fe0e9d688ff6f3c7e1f34  # v4.1.9
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
         with:
           name: security-reports-${{ github.ref_name }}
 
