@@ -15,7 +15,7 @@
 # Version: 2.1.0
 # ===================================================================# ARG globales (portables)
 
-ARG ALPINE_VERSION=3.20
+ARG ALPINE_VERSION=3.22
 ARG PYTHON_VERSION=3.12
 ARG DEVOPS_UID=1000
 ARG DEVOPS_GID=1000
