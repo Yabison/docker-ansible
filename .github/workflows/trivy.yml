@@ -103,7 +103,7 @@ jobs:
 
       # Format SARIF → onglet Security > Code Scanning de GitHub
       - name: Scan → SARIF (GitHub Security tab)
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8  # v0.33.1
+        uses: aquasecurity/trivy-action@c1824fd6edce30d7ab345a9989de00bbd46ef284  # v0.34.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: sarif
@@ -115,7 +115,7 @@ jobs:
 
       # Format JSON → artefact téléchargeable pour audit/intégration
       - name: Scan → JSON (artefact)
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8  # v0.33.1
+        uses: aquasecurity/trivy-action@c1824fd6edce30d7ab345a9989de00bbd46ef284  # v0.34.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: json
@@ -128,7 +128,7 @@ jobs:
 
       # Format CycloneDX → SBOM des dépendances de l'image
       - name: Scan → SBOM CycloneDX
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8  # v0.33.1
+        uses: aquasecurity/trivy-action@c1824fd6edce30d7ab345a9989de00bbd46ef284  # v0.34.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: cyclonedx
